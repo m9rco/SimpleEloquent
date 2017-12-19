@@ -11,7 +11,7 @@
 Use the following command to install
 
 ```bash
-composer require pushaowei/simple-eloquent 
+composer require marco/simple-eloquent 
 ```
 
 ## Application step
