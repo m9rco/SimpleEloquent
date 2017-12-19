@@ -1,0 +1,30 @@
+sudo: required
+dist: trusty
+language: php
+php:
+  - 7.0
+  - 7.1
+services:
+  - docker
+
+test:
+  adapter: mysql2
+  database: db_master_test
+  username: root
+  password: smart_master
+  encoding: utf8
+
+before_script:
+  - composer install
+  - travis_retry composer self-update
+  - travis_retry composer install --no-interaction --prefer-source --dev
+  - docker-compose up --build -d
+
+install: travis_retry composer update --prefer-dist
+
+script: ./vendor/bin/phpunit --configuration phpunit.xml.dist --coverage-clover=coverage.xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) 
+
+notifications:

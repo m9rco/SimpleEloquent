@@ -1,0 +1,5 @@
+127.0.0.1  	localhost
+172.16.238.2 	smart_master
+172.16.238.3 	smart_slave_one
+172.16.238.4 	smart_slave_two
+172.16.238.5 	biz_master

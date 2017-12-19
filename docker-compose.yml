@@ -1,0 +1,117 @@
+version: '2.0'
+services:
+  smart_master:
+    image: mysql:5.6
+    container_name: smart_master
+    ports:
+      - "3307:3306"
+    networks:
+      mysql_network:
+        ipv4_address: 172.16.238.2
+    ulimits:
+      nproc: 65535
+    hostname: smart_master
+    mem_limit: 1024m
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./tests/docker/config/smart_master/:/etc/mysql/conf.d:ro
+      - ./tests/docker/config/hosts:/etc/hosts:ro
+      - ./tests/docker/sql/smart.sql:/tmp/install.sql
+      - ./tests/docker/install/:/tmp/install
+      - ./tests/docker/data/smart_master:/var/lib/mysql:rw
+    environment:
+     MYSQL_ROOT_PASSWORD: smart_master
+     --character-set-server: utf8mb4
+     --collation-server: utf8mb4_unicode_ci
+     --init-connect: 'SET NAMES utf8mb4;'
+     --innodb-flush-log-at-trx-commit: 0
+  smart_slave_one:
+    image: mysql:5.6
+    container_name: smart_slave_one
+    networks:
+      mysql_network:
+        ipv4_address: 172.16.238.3
+    ports:
+       - "3308:3306"
+    depends_on:
+       - smart_master
+    ulimits:
+       nproc: 65535
+    hostname: smart_slave_one
+    mem_limit: 1024m
+    restart: always
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+       - ./tests/docker/config/hosts:/etc/hosts:ro
+       - ./tests/docker/config/smart_slave_one/:/etc/mysql/conf.d:ro
+       - ./tests/docker/data/slave_one:/var/lib/mysql:rw
+       - ./tests/docker/install/:/tmp/install
+    environment:
+       MYSQL_ROOT_PASSWORD: smart_slave_one
+       --character-set-server: utf8mb4
+       --collation-server: utf8mb4_unicode_ci
+       --init-connect: 'SET NAMES utf8mb4;'
+       --innodb-flush-log-at-trx-commit: 0
+  smart_slave_two:
+    image: mysql:5.6
+    container_name: smart_slave_two
+    ports:
+      - "3309:3306"
+    depends_on:
+       - smart_master
+    networks:
+       mysql_network:
+         ipv4_address: 172.16.238.4
+    ulimits:
+       nproc: 65535
+    hostname: smart_slave_two
+    mem_limit: 1024m
+    restart: always
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+       - ./tests/docker/config/smart_slave_two/:/etc/mysql/conf.d:ro
+       - ./tests/docker/config/hosts:/etc/hosts:ro
+       - ./tests/docker/data/slave_two:/var/lib/mysql:rw
+       - ./tests/docker/install/:/tmp/install
+    environment:
+       MYSQL_ROOT_PASSWORD: smart_slave_two
+       --character-set-server: utf8mb4
+       --character-set-server: utf8mb4
+       --collation-server: utf8mb4_unicode_ci
+       --init-connect: 'SET NAMES utf8mb4;'
+       --innodb-flush-log-at-trx-commit: 0
+  biz_master:
+    image: mysql:5.6
+    container_name: biz_master
+    networks:
+       mysql_network:
+         ipv4_address: 172.16.238.5
+    ulimits:
+       nproc: 65535
+    hostname: biz_master
+    mem_limit: 1024m
+    restart: always
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+       - ./tests/docker/config/biz_master/:/etc/mysql/conf.d:ro
+       - ./tests/docker/config/hosts:/etc/hosts:ro
+       - ./tests/docker/sql/biz.sql:/tmp/install.sql
+       - ./tests/docker/data/biz_master:/var/lib/mysql:rw
+       - ./tests/docker/install/:/tmp/install
+    environment:
+       MYSQL_ROOT_PASSWORD: biz_master
+       --character-set-server: utf8mb4
+       --collation-server: utf8mb4_unicode_ci
+       --init-connect: 'SET NAMES utf8mb4;'
+       --innodb-flush-log-at-trx-commit: 0
+    ports:
+       - "3310:3306"
+networks:
+  mysql_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.238.0/24
+        gateway: 172.16.238.1
