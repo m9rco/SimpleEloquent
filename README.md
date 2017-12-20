@@ -3,8 +3,8 @@
 [![Build Status](https://img.shields.io/travis/PuShaoWei/SimpleEloquent.svg?style=flat-square)](https://travis-ci.org/PuShaoWei/SimpleEloquent)
 [![Coverage Status](https://img.shields.io/codecov/c/github/PuShaoWei/SimpleEloquent.svg?style=flat-square)](https://codecov.io/github/PuShaoWei/SimpleEloquent)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/PuShaoWei/SimpleEloquent.svg?style=flat-square)](https://scrutinizer-ci.com/g/PuShaoWei/SimpleEloquent/?branch=master)
-[![Latest Stable Version](https://img.shields.io/packagist/v/PuShaoWei/simple-eloquent.svg?style=flat-square&label=stable)](https://packagist.org/packages/marco/SimpleEloquent)
-[![License](https://img.shields.io/packagist/l/PuShaoWei/simple-eloquent.svg?style=flat-square)](https://packagist.org/packages/PuShaoWei/SimpleEloquent)
+[![Latest Stable Version](https://img.shields.io/packagist/v/marco/simple-eloquent.svg?style=flat-square&label=stable)](https://packagist.org/packages/marco/SimpleEloquent)
+[![License](https://img.shields.io/packagist/l/marco/simple-eloquent.svg?style=flat-square)](https://packagist.org/packages/marco/SimpleEloquent)
 
 ## Installation
 
@@ -18,7 +18,7 @@ composer require marco/simple-eloquent
 
 > Really don't have too much time delay in the docker mysql on the mirror, so I gave in, manual, please...
 
-Running with docker-compose
+Running with docker-compos
 
 Step1: Start the container
 
