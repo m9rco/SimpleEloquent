@@ -199,15 +199,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
         })->sort()->keys()->all();
     }
 
-    /**
-     * Collapse the collection of items into a single array.
-     *
-     * @return static
-     */
-    public function collapse()
-    {
-        return new static(Tools::collapse($this->items));
-    }
 
     /**
      * Determine if an item exists in the collection.
@@ -238,40 +229,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
         return $this->contains($this->operatorForWhere($key, $operator, $value));
     }
 
-    /**
-     * Determine if an item exists in the collection using strict comparison.
-     *
-     * @param  mixed $key
-     * @param  mixed $value
-     * @return bool
-     */
-    public function containsStrict($key, $value = null)
-    {
-        if (func_num_args() == 2) {
-            return $this->contains(function ($item) use ($key, $value) {
-                return data_get($item, $key) === $value;
-            });
-        }
-
-        if ($this->useAsCallable($key)) {
-            return !is_null($this->first($key));
-        }
-
-        return in_array($key, $this->items, true);
-    }
-
-    /**
-     * Cross join with the given lists, returning all possible permutations.
-     *
-     * @param  mixed ...$lists
-     * @return static
-     */
-    public function crossJoin(...$lists)
-    {
-        return new static(Tools::crossJoin(
-            $this->items, ...array_map([$this, 'getArrayableItems'], $lists)
-        ));
-    }
 
     /**
      * Get the items in the collection that are not present in the given items.
@@ -459,7 +416,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
     protected function operatorForWhere($key, $operator, $value)
     {
         return function ($item) use ($key, $operator, $value) {
-            $retrieved = data_get($item, $key);
+            $retrieved = Tools::dataGet($item, $key);
 
             try {
                 switch ($operator) {
@@ -514,7 +471,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
         $values = $this->getArrayableItems($values);
 
         return $this->filter(function ($item) use ($key, $values, $strict) {
-            return in_array(data_get($item, $key), $values, $strict);
+            return in_array(Tools::dataGet($item, $key), $values, $strict);
         });
     }
 
@@ -543,7 +500,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
         $values = $this->getArrayableItems($values);
 
         return $this->reject(function ($item) use ($key, $values, $strict) {
-            return in_array(data_get($item, $key), $values, $strict);
+            return in_array(Tools::dataGet($item, $key), $values, $strict);
         });
     }
 
@@ -620,7 +577,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
             return $this->items[$key];
         }
 
-        return value($default);
+        return Tools::toValue($default);
     }
 
     /**
@@ -1059,6 +1016,23 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
         }
 
         return new static($partitions);
+    }
+
+    /**
+     * Get a value retrieving callback.
+     *
+     * @param  string  $value
+     * @return callable
+     */
+    protected function valueRetriever($value)
+    {
+        if ($this->useAsCallable($value)) {
+            return $value;
+        }
+
+        return function ($item) use ($value) {
+            return Tools::dataGet($item, $value);
+        };
     }
 
     /**
@@ -1502,23 +1476,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
     }
 
     /**
-     * Get a value retrieving callback.
-     *
-     * @param  string $value
-     * @return callable
-     */
-    protected function valueRetriever($value)
-    {
-        if ($this->useAsCallable($value)) {
-            return $value;
-        }
-
-        return function ($item) use ($value) {
-            return data_get($item, $value);
-        };
-    }
-
-    /**
      * Zip the collection together with one or more arrays.
      * e.g. new Collection([1, 2, 3])->zip([4, 5, 6]);
      *      => [[1, 4], [2, 5], [3, 6]]
@@ -1561,7 +1518,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
     public function toArray()
     {
         return array_map(function ($value) {
-            return $value instanceof Arrayable ? $value->toArray() : $value;
+            return $value instanceof \stdClass ?  json_decode(json_encode($value),TRUE) : $value;
         }, $this->items);
     }
 
@@ -1703,10 +1660,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate,  JsonSeri
             return $items;
         } else if ($items instanceof self) {
             return $items->all();
-        } else if ($items instanceof Arrayable) {
-            return $items->toArray();
-        } else if ($items instanceof Jsonable) {
-            return json_decode($items->toJson(), true);
         } else if ($items instanceof JsonSerializable) {
             return $items->jsonSerialize();
         } else if ($items instanceof Traversable) {
